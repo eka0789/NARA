@@ -1,0 +1,65 @@
+name: nara
+description: >-
+  NARA — personal smart companion. Tasks, notes, habits and a hybrid AI
+  assistant in one elegant Flutter app backed by Firebase.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State & navigation
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+
+  # Backend (production). The app degrades to local mode when Firebase is
+  # not configured — see README "Firebase setup".
+  firebase_core: ^3.10.0
+  firebase_auth: ^5.4.0
+  cloud_firestore: ^5.6.0
+
+  # Hybrid AI (cloud tier via Gemini REST)
+  http: ^1.2.2
+
+  # Storage & utilities
+  shared_preferences: ^2.3.4
+  uuid: ^4.5.1
+  intl: any
+
+  # Daily reminder notifications
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+  google_sign_in: ^7.2.0
+  # Pin: google_sign_in_android 7.2.18 ships a CredentialManager regression
+  # that reports failures as GoogleSignInExceptionCode.canceled (no picker /
+  # broken after account select) — flutter/flutter#187395, #171761.
+  # ^7.1.0 is google_sign_in's own constraint, so 7.2.10 stays compatible.
+  google_sign_in_android: 7.2.10
+  path_parsing: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700

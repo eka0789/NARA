@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// NARA Firestore security rules.
+// Model: every document lives under users/{uid}; a user can only touch
+// their own tree. No document contains another user's data.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // User profile document + preferences.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      // First-level collections: tasks, notes, habits, chats.
+      match /{collection}/{docId} {
+        allow read, write: if isOwner(uid)
+          && collection in ['tasks', 'notes', 'habits', 'chats'];
+
+        // Second-level: habit logs (habits/{id}/logs/{day})
+        // and chat messages (chats/{id}/messages/{msgId}).
+        match /{subCollection}/{subDocId} {
+          allow read, write: if isOwner(uid)
+            && subCollection in ['logs', 'messages'];
+        }
+      }
+    }
+  }
+}
