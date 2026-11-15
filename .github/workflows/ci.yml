@@ -16,6 +16,11 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Pinned to the version used for local validation. Flutter 3.50
+          # deprecates `package:flutter/material.dart` in favor of the new
+          # `material_ui` package (32 infos with --fatal-infos) — migrate
+          # deliberately later, don't let the channel bump break CI.
+          flutter-version: 3.47.9
           cache: true
 
       - name: Pub get
