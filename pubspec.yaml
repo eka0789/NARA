@@ -3,7 +3,7 @@ description: >-
   NARA — personal smart companion. Tasks, notes, habits and a hybrid AI
   assistant in one elegant Flutter app backed by Firebase.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.13.0

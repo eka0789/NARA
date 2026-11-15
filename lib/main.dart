@@ -17,6 +17,7 @@ import 'core/storage/local_store.dart';
 import 'features/auth/auth_repository.dart';
 import 'features/auth/firebase_auth_repository.dart';
 import 'features/auth/local_auth_repository.dart';
+import 'features/settings/settings_providers.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -62,9 +63,7 @@ Future<void> main() async {
     if (prefs.dailyReminder) {
       // Resolve 'system' to the device locale — scheduling with the raw
       // 'system' string would show English reminders to Indonesian users.
-      final lang = prefs.language == 'system'
-          ? WidgetsBinding.instance.platformDispatcher.locale.languageCode
-          : prefs.language;
+      final lang = resolveNotificationLanguage(prefs);
       unawaited(
         ReminderService.instance.scheduleDaily(
           hour: prefs.reminderHour,

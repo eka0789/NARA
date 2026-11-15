@@ -39,3 +39,16 @@ int bestStreak(Set<String> days, DateTime today) {
   }
   return best;
 }
+
+/// Check-in counts per day for the week containing [today], Monday..Sunday.
+/// [habitDays] is one set of day keys per habit (the caller drops habits
+/// that no longer exist so deleted data never lingers in the chart).
+List<int> weekCheckIns(Iterable<Set<String>> habitDays, DateTime today) {
+  final weekStart = today.weekStart;
+  return [
+    for (var i = 0; i < 7; i++)
+      habitDays
+          .where((days) => days.contains(dateKey(weekStart.addDays(i))))
+          .length,
+  ];
+}

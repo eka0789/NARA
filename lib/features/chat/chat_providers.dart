@@ -49,17 +49,17 @@ class ChatController extends Notifier<ChatUiState> {
     final text = raw.trim();
     if (text.isEmpty || state.thinking) return;
 
-    final repo = ref.read(chatRepositoryProvider);
-    final userMessage = ChatMessage(
-      id: _uuid.v4(),
-      role: ChatRole.user,
-      text: text,
-      createdAt: DateTime.now(),
-    );
-    await repo.addMessage(userMessage);
     state = state.copyWith(thinking: true, errorCode: null);
-
     try {
+      final repo = ref.read(chatRepositoryProvider);
+      final userMessage = ChatMessage(
+        id: _uuid.v4(),
+        role: ChatRole.user,
+        text: text,
+        createdAt: DateTime.now(),
+      );
+      await repo.addMessage(userMessage);
+
       final cloud = ref.read(cloudAiEnabledProvider);
       String answer;
       AiSource source;

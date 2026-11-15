@@ -36,4 +36,9 @@ class ReminderConstants {
   static const String dailyChannelId = 'nara_daily_reminder';
   static const String dailyChannelName = 'Daily reminder';
   static const int dailyNotificationId = 1001;
+
+  /// One-shot due-date reminders for individual tasks. Notification ids are
+  /// derived per task (see `taskNotificationId`), all in this channel.
+  static const String taskChannelId = 'nara_task_reminders';
+  static const String taskChannelName = 'Task reminders';
 }

@@ -594,4 +594,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get datePickerNoDate => 'No date';
+
+  @override
+  String get progressTitle => 'Today\'s progress';
+
+  @override
+  String progressOf(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String get progressNone => 'Nothing due today — enjoy the calm';
+
+  @override
+  String get habitWeekTitle => 'This week';
+
+  @override
+  String habitWeekCheckIns(int count) {
+    return '$count check-ins in the last 7 days';
+  }
+
+  @override
+  String get exportData => 'Export data';
+
+  @override
+  String get exportDone => 'All data copied to clipboard as JSON.';
 }

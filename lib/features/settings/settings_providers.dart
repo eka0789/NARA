@@ -7,6 +7,13 @@ import '../../core/storage/local_store.dart';
 import '../../core/providers/core_providers.dart';
 import '../../core/storage/local_keys.dart';
 
+/// Language for notifications: 'system' must resolve to the device locale,
+/// otherwise an Indonesian user gets English reminders.
+String resolveNotificationLanguage(UserPrefs prefs) {
+  if (prefs.language != 'system') return prefs.language;
+  return WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+}
+
 /// User preferences with a device-local shadow for instant boot.
 ///
 /// Writes go to local storage first (UI responds immediately), then sync to
@@ -21,13 +28,7 @@ class PrefsController extends Notifier<UserPrefs> {
 
   LocalStore get _store => ref.read(localStoreProvider);
 
-  /// Language for notifications: 'system' must resolve to the device locale,
-  /// otherwise an Indonesian user gets English reminders.
-  String get _notificationLang {
-    final language = state.language;
-    if (language != 'system') return language;
-    return WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-  }
+  String get _notificationLang => resolveNotificationLanguage(state);
 
   Future<void> _persist(UserPrefs prefs) async {
     _store.writeMap(LocalKeys.prefsShadow, prefs.toMap());

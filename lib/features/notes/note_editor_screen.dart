@@ -8,6 +8,7 @@ import '../../core/providers/core_providers.dart';
 import '../../core/theme/nara_theme.dart';
 import '../../core/widgets/ui.dart';
 import '../data/data_providers.dart';
+import 'note_repository.dart';
 
 const _uuid = Uuid();
 
@@ -24,6 +25,9 @@ class NoteEditorScreen extends ConsumerStatefulWidget {
 class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   late final TextEditingController _title;
   late final TextEditingController _body;
+  // Captured once (reading `ref` is illegal after dispose): the editor's
+  // autosave runs from `dispose`, where `ref.read` would throw.
+  late final NoteRepository _repo;
   late int _colorIndex;
   bool _pinned = false;
   Note? _existing;
@@ -33,6 +37,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   @override
   void initState() {
     super.initState();
+    _repo = ref.read(noteRepositoryProvider);
     final id = widget.noteId;
     if (id == null || id == 'new') {
       _title = TextEditingController();
@@ -89,7 +94,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     if (title.isEmpty && body.isEmpty) {
       return false; // nothing worth saving
     }
-    final repo = ref.read(noteRepositoryProvider);
+    final repo = _repo;
     final now = DateTime.now();
     if (_existing != null) {
       await repo.update(

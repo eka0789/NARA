@@ -68,24 +68,18 @@ class FirebaseAuthRepository implements AuthRepository {
         await GoogleSignIn.instance.initialize();
         _googleInitialized = true;
       }
-      debugPrint('GSI[1] initialize ok');
       final account = await GoogleSignIn.instance.authenticate();
-      debugPrint('GSI[2] authenticate ok uid=${account.id}');
       final idToken = account.authentication.idToken;
       if (idToken == null || idToken.isEmpty) {
-        debugPrint('GSI[!] idToken NULL/empty');
         throw AuthException('unknown');
       }
-      debugPrint('GSI[3] idToken ok (${idToken.length} chars)');
       final credential = await _auth.signInWithCredential(
         GoogleAuthProvider.credential(idToken: idToken),
       );
       final user = credential.user;
       if (user == null) {
-        debugPrint('GSI[!] firebase user NULL');
         throw AuthException('unknown');
       }
-      debugPrint('GSI[4] firebase ok uid=${user.uid}');
       // First Google sign-in doubles as registration: ensure the Firestore
       // user document exists (also covers reinstalls).
       final doc = await _users.doc(user.uid).get();
@@ -98,18 +92,22 @@ class FirebaseAuthRepository implements AuthRepository {
           'prefs': const UserPrefs().toMap(),
         }, SetOptions(merge: true));
       }
-      debugPrint('GSI[5] firestore ok (created=${!doc.exists}) — DONE');
     } on GoogleSignInException catch (e) {
-      debugPrint('GSI[!] plugin FAIL code=${e.code} desc=${e.description} details=${e.details}');
+      // Failure-only logging: step-by-step success traces leak uids into
+      // release logcat, error codes keep CredentialManager diagnosable.
+      debugPrint('Google sign-in failed: ${e.code}'
+          '${e.description == null ? '' : ' — ${e.description}'}');
       // The user backing out is not an error — surfaced as a silent no-op.
       throw AuthException(
         e.code == GoogleSignInExceptionCode.canceled ? 'canceled' : 'unknown',
       );
     } on FirebaseAuthException catch (e) {
-      debugPrint('GSI[!] firebase FAIL code=${e.code} msg=${e.message}');
+      debugPrint('Firebase sign-in failed: ${e.code}');
       throw AuthException(_mapCode(e));
+    } on AuthException {
+      rethrow; // classified contract throws from inside the try
     } on Exception catch (e) {
-      debugPrint('GSI[!] other FAIL ${e.runtimeType}: $e');
+      debugPrint('Google sign-in failed: ${e.runtimeType}');
       // Contract: this method only ever throws AuthException — anything the
       // plugin layer raises (e.g. platform errors) degrades to generic text.
       throw AuthException('unknown');

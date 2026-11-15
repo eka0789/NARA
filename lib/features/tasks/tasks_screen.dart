@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/task.dart';
@@ -22,6 +23,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   TaskFilter _filter = TaskFilter.all;
 
   Future<void> _toggle(Task task) async {
+    HapticFeedback.lightImpact();
     final repo = ref.read(taskRepositoryProvider);
     if (task.done) {
       await repo.update(task.copyWith(done: false, updatedAt: DateTime.now()));

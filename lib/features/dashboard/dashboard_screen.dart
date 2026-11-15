@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +17,7 @@ import '../chat/chat_providers.dart';
 import '../data/data_providers.dart';
 import '../habits/habit_streak.dart';
 import '../tasks/task_form_sheet.dart';
+import 'dashboard_progress.dart';
 
 /// Home: greeting, AI suggestion, stats, quick actions, today's tasks,
 /// habit check-ins.
@@ -49,6 +53,12 @@ class DashboardScreen extends ConsumerWidget {
         : habits
             .map((h) => bestStreak(logs[h.id] ?? const {}, now))
             .fold<int>(0, (a, b) => a > b ? a : b);
+    final (progressDone, progressTotal) = dailyProgress(
+      tasks: tasks,
+      habits: habits,
+      habitLogs: logs,
+      now: now,
+    );
 
     final assistantContext = AssistantContext(
       langCode: Localizations.localeOf(context).languageCode,
@@ -119,6 +129,12 @@ class DashboardScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
+
+            // Today's progress ring
+            Entrance(
+              child: _ProgressCard(done: progressDone, total: progressTotal),
+            ),
+            const SizedBox(height: 16),
 
             // AI suggestion
             Entrance(
@@ -432,4 +448,140 @@ class _QuickAction extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "Today's progress" card: gradient ring of today's completed commitments
+/// (habits checked in + tasks due today/overdue that are done).
+class _ProgressCard extends StatelessWidget {
+  const _ProgressCard({required this.done, required this.total});
+
+  final int done;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final clear = total == 0;
+    return NaraCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          _ProgressRing(
+            value: clear ? 1 : done / total,
+            clear: clear,
+            label: clear ? '✓' : '$done',
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.progressTitle, style: theme.textTheme.titleSmall),
+                const SizedBox(height: 2),
+                Text(
+                  clear ? l10n.progressNone : l10n.progressOf(done, total),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Animated gradient donut; [TweenAnimationBuilder] drives the sweep so the
+/// ring fills in from zero on every mount. Reduce-motion renders instantly.
+class _ProgressRing extends StatelessWidget {
+  const _ProgressRing({
+    required this.value,
+    required this.clear,
+    required this.label,
+  });
+
+  final double value;
+  final bool clear;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final clamped = value.clamp(0.0, 1.0);
+    final colors = clear
+        ? const [Color(0xFF14B8A6), Color(0xFF14B8A6)]
+        : [theme.colorScheme.primary, theme.colorScheme.tertiary];
+    final track =
+        theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55);
+    final center = Center(
+      child: Text(
+        label,
+        style:
+            theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: clamped),
+      duration:
+          reduceMotion ? Duration.zero : const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+      builder: (context, animated, _) => CustomPaint(
+        size: const Size.square(64),
+        painter: _RingPainter(
+          progress: animated,
+          colors: colors,
+          trackColor: track,
+        ),
+        child: center,
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  const _RingPainter({
+    required this.progress,
+    required this.colors,
+    required this.trackColor,
+  });
+
+  static const _stroke = 8.0;
+
+  final double progress;
+  final List<Color> colors;
+  final Color trackColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final inset = Rect.fromLTWH(
+      _stroke / 2,
+      _stroke / 2,
+      size.width - _stroke,
+      size.height - _stroke,
+    );
+    final track = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _stroke
+      ..color = trackColor;
+    canvas.drawArc(inset, 0, 2 * math.pi, false, track);
+    final sweep = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _stroke
+      ..strokeCap = StrokeCap.round
+      ..shader = SweepGradient(
+        startAngle: 0,
+        endAngle: 2 * math.pi,
+        colors: colors,
+        transform: const GradientRotation(-math.pi / 2),
+      ).createShader(inset);
+    canvas.drawArc(inset, -math.pi / 2, 2 * math.pi * progress, false, sweep);
+  }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter old) =>
+      old.progress != progress ||
+      old.trackColor != trackColor ||
+      !listEquals(old.colors, colors);
 }

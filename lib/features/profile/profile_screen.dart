@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/ai/gemini_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/models/habit.dart';
+import '../../core/models/note.dart';
+import '../../core/models/task.dart';
 import '../../core/models/user_profile.dart';
 import '../../core/providers/core_providers.dart';
 import '../../core/widgets/ui.dart';
 import '../data/data_providers.dart';
 import '../settings/settings_providers.dart';
+import 'data_export.dart';
 
 /// Profile + settings hub.
 class ProfileScreen extends ConsumerWidget {
@@ -25,6 +30,7 @@ class ProfileScreen extends ConsumerWidget {
     final tasks = ref.watch(tasksProvider).value ?? const [];
     final notes = ref.watch(notesProvider).value ?? const [];
     final habits = ref.watch(habitsProvider).value ?? const [];
+    final habitLogs = ref.watch(habitLogsProvider).value ?? const <String, Set<String>>{};
     final tasksDone = tasks.where((t) => t.done).length;
 
     return Scaffold(
@@ -244,6 +250,19 @@ class ProfileScreen extends ConsumerWidget {
             onTap: () => _showAiConfigSheet(context, ref),
           ),
           _SettingTile(
+            icon: Icons.ios_share_rounded,
+            label: l10n.exportData,
+            value: '',
+            onTap: () => _exportData(
+              context,
+              profile: profile,
+              tasks: tasks,
+              notes: notes,
+              habits: habits,
+              habitLogs: habitLogs,
+            ),
+          ),
+          _SettingTile(
             icon: Icons.info_outline_rounded,
             label: l10n.settingsAbout,
             value: '',
@@ -275,6 +294,29 @@ class ProfileScreen extends ConsumerWidget {
     final hh = hour.toString().padLeft(2, '0');
     final mm = minute.toString().padLeft(2, '0');
     return '$hh:$mm';
+  }
+
+  /// Copies the user's full data as pretty-printed JSON to the clipboard.
+  void _exportData(
+    BuildContext context, {
+    required UserProfile? profile,
+    required List<Task> tasks,
+    required List<Note> notes,
+    required List<Habit> habits,
+    required Map<String, Set<String>> habitLogs,
+  }) {
+    Clipboard.setData(
+      ClipboardData(
+        text: buildExportJson(
+          profile: profile,
+          tasks: tasks,
+          notes: notes,
+          habits: habits,
+          habitLogs: habitLogs,
+        ),
+      ),
+    );
+    showNaraSnack(context, context.l10n.exportDone);
   }
 
   void _showEditProfileSheet(

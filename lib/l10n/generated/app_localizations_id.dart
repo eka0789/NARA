@@ -598,4 +598,29 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get datePickerNoDate => 'Tanpa tanggal';
+
+  @override
+  String get progressTitle => 'Progres hari ini';
+
+  @override
+  String progressOf(int done, int total) {
+    return '$done dari $total selesai';
+  }
+
+  @override
+  String get progressNone => 'Belum ada target hari ini — nikmati harimu';
+
+  @override
+  String get habitWeekTitle => 'Minggu ini';
+
+  @override
+  String habitWeekCheckIns(int count) {
+    return '$count check-in dalam 7 hari terakhir';
+  }
+
+  @override
+  String get exportData => 'Ekspor data';
+
+  @override
+  String get exportDone => 'Semua data disalin ke clipboard sebagai JSON.';
 }

@@ -210,5 +210,23 @@
   "timePickerTitle": "Pick reminder time",
   "datePickerToday": "Today",
   "datePickerTomorrow": "Tomorrow",
-  "datePickerNoDate": "No date"
+  "datePickerNoDate": "No date",
+  "progressTitle": "Today's progress",
+  "progressOf": "{done} of {total} done",
+  "@progressOf": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "progressNone": "Nothing due today — enjoy the calm",
+  "habitWeekTitle": "This week",
+  "habitWeekCheckIns": "{count} check-ins in the last 7 days",
+  "@habitWeekCheckIns": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportData": "Export data",
+  "exportDone": "All data copied to clipboard as JSON."
 }

@@ -185,5 +185,23 @@
   "timePickerTitle": "Pilih jam pengingat",
   "datePickerToday": "Hari ini",
   "datePickerTomorrow": "Besok",
-  "datePickerNoDate": "Tanpa tanggal"
+  "datePickerNoDate": "Tanpa tanggal",
+  "progressTitle": "Progres hari ini",
+  "progressOf": "{done} dari {total} selesai",
+  "@progressOf": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "progressNone": "Belum ada target hari ini — nikmati harimu",
+  "habitWeekTitle": "Minggu ini",
+  "habitWeekCheckIns": "{count} check-in dalam 7 hari terakhir",
+  "@habitWeekCheckIns": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportData": "Ekspor data",
+  "exportDone": "Semua data disalin ke clipboard sebagai JSON."
 }

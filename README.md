@@ -18,10 +18,12 @@
 
 - 🤖 **NARA AI (hybrid)** — ngobrol & memberi perintah: *"buat tugas laporan besok jam 9"*, *"catat bahwa ide kue pandan"*, *"sudah olahraga hari ini"* — asisten benar-benar mengeksekusi. Instan & offline di perangkat; makin terbuka dengan **AI Cloud** (Gemini, key opsional).
 - ✅ **Tugas** — prioritas, kategori, tenggat + jam, filter pintar, undo hapus.
+- ⏰ **Pengingat per-tugas** — notifikasi otomatis saat tenggat tugas tiba; ikut ter-reschedule saat tugas diedit/diselesaikan/dihapus.
 - 📝 **Catatan** — grid warna, pin, pencarian, autosave.
-- 🔥 **Kebiasaan** — check-in harian, streak, progress mingguan, target/minggu.
-- 🏠 **Beranda pintar** — sapaan personal, saran AI kontekstual, statistik, aksi cepat.
+- 🔥 **Kebiasaan** — check-in harian dengan konfeti & haptic, streak, grafik konsistensi 7 hari, progress mingguan, target/minggu.
+- 🏠 **Beranda pintar** — sapaan personal, **ring progres hari ini** (animasi gradient), saran AI kontekstual, statistik, aksi cepat.
 - 🔔 **Pengingat harian** — notifikasi terjadwal.
+- 📤 **Ekspor data** — seluruh data (tugas, catatan, kebiasaan + log) sebagai JSON ke clipboard dari Profil.
 - 🌗 **Tema gelap/terang** Material 3 + font Poppins, offline-first, dan **mode lokal** (app tetap berfungsi 100% tanpa Firebase).
 
 ## 🚀 Menjalankan Proyek
@@ -69,7 +71,7 @@ flutter build appbundle --release    # AAB untuk Play Store
 ### Perintah Kualitas
 ```bash
 flutter analyze   # 0 temuan
-flutter test      # 40+ test unit/repo/widget
+flutter test      # 65+ test unit/repo/widget
 ```
 
 ## 🏗️ Arsitektur Ringkas
@@ -100,7 +102,7 @@ core/ (theme, router, DI, models, LocalStore, AI engine, notifications)
 ```
 
 ## 🗺️ Roadmap
-Widget home screen → pengingat per-tugas → ekspor data → proxy AI Cloud Function → iOS.
+Widget home screen → pengingat per-tugas ✅ → ekspor data ✅ → proxy AI Cloud Function → iOS.
 
 ## 📄 Lisensi Aset
 Kode proyek milik Anda. Font [Poppins](https://fonts.google.com/specimen/Poppins) (SIL OFL). — Dibangun dengan Flutter & Firebase.

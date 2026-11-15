@@ -1213,6 +1213,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No date'**
   String get datePickerNoDate;
+
+  /// No description provided for @progressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s progress'**
+  String get progressTitle;
+
+  /// No description provided for @progressOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} done'**
+  String progressOf(int done, int total);
+
+  /// No description provided for @progressNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing due today — enjoy the calm'**
+  String get progressNone;
+
+  /// No description provided for @habitWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get habitWeekTitle;
+
+  /// No description provided for @habitWeekCheckIns.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} check-ins in the last 7 days'**
+  String habitWeekCheckIns(int count);
+
+  /// No description provided for @exportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export data'**
+  String get exportData;
+
+  /// No description provided for @exportDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All data copied to clipboard as JSON.'**
+  String get exportDone;
 }
 
 class _AppLocalizationsDelegate
