@@ -619,4 +619,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportDone => 'All data copied to clipboard as JSON.';
+
+  @override
+  String get noteTagLabel => 'Tags';
+
+  @override
+  String get noteTagAdd => 'Add tag';
+
+  @override
+  String get noteTagHint => 'Comma separated — e.g. work, ideas';
+
+  @override
+  String get subPageNew => 'New sub-page';
+
+  @override
+  String get templatePickTitle => 'Start a page';
+
+  @override
+  String get templateBlank => 'Blank';
+
+  @override
+  String get tplJournalTitle => 'Daily journal';
+
+  @override
+  String get tplJournalBody =>
+      '\n## ✅ Top 3 priorities\n- [ ] \n- [ ] \n- [ ] \n\n## 🙏 Three good things\n- \n- \n- \n\n## 💭 Notes\n';
+
+  @override
+  String get tplMeetingTitle => 'Meeting notes';
+
+  @override
+  String get tplMeetingBody =>
+      '\n## 👥 Attendees\n- \n\n## 🗓️ Agenda\n- \n\n## 💬 Discussion\n\n## ✅ Action items\n- [ ] \n';
+
+  @override
+  String get tplProjectTitle => 'Project plan';
+
+  @override
+  String get tplProjectBody =>
+      '\n## 🎯 Goal\n\n## 🚩 Milestones\n- [ ] \n- [ ] \n- [ ] \n\n## 🧠 Notes\n';
+
+  @override
+  String get searchHint => 'Search tasks, notes, habits…';
+
+  @override
+  String searchNoResults(String q) {
+    return 'Nothing found for \"$q\"';
+  }
+
+  @override
+  String get deleteNestedTitle => 'Delete page and its sub-pages?';
+
+  @override
+  String deleteNestedBody(int count) {
+    return '$count sub-page(s) will also be deleted. This cannot be undone.';
+  }
+
+  @override
+  String get taskBoardTitle => 'Toggle board view';
 }

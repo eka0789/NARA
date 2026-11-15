@@ -10,16 +10,22 @@
 |---|---|---|---|
 | ![Onboarding](docs/screenshots/onboarding.png) | ![Login](docs/screenshots/login.png) | ![Beranda](docs/screenshots/home.png) | ![NARA AI](docs/screenshots/chat.png) |
 
-| Tugas | Kebiasaan | Catatan | Profil |
+| Tugas | Board (v1.2) | Kebiasaan | Catatan |
 |---|---|---|---|
-| ![Tugas](docs/screenshots/tasks.png) | ![Kebiasaan](docs/screenshots/habits.png) | ![Catatan](docs/screenshots/notes.png) | ![Profil](docs/screenshots/profile.png) |
+| ![Tugas](docs/screenshots/tasks.png) | ![Board](docs/screenshots/board.png) | ![Kebiasaan](docs/screenshots/habits.png) | ![Catatan](docs/screenshots/notes.png) |
+
+| Template halaman (v1.2) | Profil |
+|---|---|
+| ![Template](docs/screenshots/templates.png) | ![Profil](docs/screenshots/profile.png) |
 
 ## ✨ Fitur
 
 - 🤖 **NARA AI (hybrid)** — ngobrol & memberi perintah: *"buat tugas laporan besok jam 9"*, *"catat bahwa ide kue pandan"*, *"sudah olahraga hari ini"* — asisten benar-benar mengeksekusi. Instan & offline di perangkat; makin terbuka dengan **AI Cloud** (Gemini, key opsional).
 - ✅ **Tugas** — prioritas, kategori, tenggat + jam, filter pintar, undo hapus.
+- 📌 **Board view ala Notion** — tugas tergrup per kategori dalam papan kanban (toggle list ↔ board).
 - ⏰ **Pengingat per-tugas** — notifikasi otomatis saat tenggat tugas tiba; ikut ter-reschedule saat tugas diedit/diselesaikan/dihapus.
-- 📝 **Catatan** — grid warna, pin, pencarian, autosave.
+- 📝 **Catatan ala Notion** — halaman bertingkat (**sub-page** dengan navigasi folder), **tag** + filter, **checklist markdown** (`- [ ]`) dengan progres di kartu, **template halaman** (Kosong / Jurnal Harian / Notulen Meeting / Rencana Proyek), pin, pencarian, autosave.
+- 🔍 **Quick Find global** — cari tugas + catatan + kebiasaan sekaligus, langsung lompat ke hasilnya (tombol 🔍 di Beranda).
 - 🔥 **Kebiasaan** — check-in harian dengan konfeti & haptic, streak, grafik konsistensi 7 hari, progress mingguan, target/minggu.
 - 🏠 **Beranda pintar** — sapaan personal, **ring progres hari ini** (animasi gradient), saran AI kontekstual, statistik, aksi cepat.
 - 🔔 **Pengingat harian** — notifikasi terjadwal.
@@ -71,7 +77,7 @@ flutter build appbundle --release    # AAB untuk Play Store
 ### Perintah Kualitas
 ```bash
 flutter analyze   # 0 temuan
-flutter test      # 65+ test unit/repo/widget
+flutter test      # 75+ test unit/repo/widget
 ```
 
 ## 🏗️ Arsitektur Ringkas

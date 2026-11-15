@@ -8,8 +8,10 @@ import '../../core/theme/nara_theme.dart';
 import '../../core/utils/date_time_ext.dart';
 import '../../core/widgets/ui.dart';
 import '../data/data_providers.dart';
+import 'note_format.dart';
 
-/// Searchable two-column note grid with pinned-first ordering.
+/// Notion-style page browser: hierarchical pages (sub-pages), tag filters,
+/// search, pinned-first ordering, and swipe-free card actions.
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
 
@@ -19,17 +21,86 @@ class NotesScreen extends ConsumerStatefulWidget {
 
 class _NotesScreenState extends ConsumerState<NotesScreen> {
   String _query = '';
+  String? _folderId; // null = top level
+  String? _tagFilter; // null = all tags
+
+  void _enterFolder(String noteId) => setState(() {
+        _folderId = noteId;
+        _query = '';
+        _tagFilter = null;
+      });
+
+  void _exitFolder() => setState(() {
+        _folderId = null;
+        _query = '';
+        _tagFilter = null;
+      });
+
+  List<Note> _childrenOf(List<Note> notes, String? parentId) =>
+      notes.where((n) => n.parentId == parentId).toList();
+
+  int _childCount(List<Note> notes, String noteId) =>
+      notes.where((n) => n.parentId == noteId).length;
+
+  /// All ids in the subtree rooted at [noteId] (excluding the root itself) —
+  /// used by cascade delete so sub-pages never orphan.
+  List<String> _descendantIds(List<Note> notes, String noteId) {
+    final ids = <String>[];
+    for (final child in _childrenOf(notes, noteId)) {
+      ids
+        ..add(child.id)
+        ..addAll(_descendantIds(notes, child.id));
+    }
+    return ids;
+  }
 
   Future<void> _delete(Note note) async {
     final l10n = context.l10n;
+    final notes = ref.read(notesProvider).value ?? const <Note>[];
+    final children = _descendantIds(notes, note.id);
     final repo = ref.read(noteRepositoryProvider);
+
+    if (children.isNotEmpty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.deleteNestedTitle),
+          content: Text(l10n.deleteNestedBody(children.length)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(l10n.commonDelete),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
     await repo.delete(note.id);
+    for (final id in children) {
+      await repo.delete(id);
+    }
+    // Deleted the folder we are currently browsing → go back to root.
+    if (note.id == _folderId) _exitFolder();
+
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(l10n.noteDeleted),
+          content: Text(
+            children.isEmpty
+                ? l10n.noteDeleted
+                : '${l10n.noteDeleted} (+${children.length})',
+          ),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
             label: l10n.commonUndo,
@@ -44,11 +115,23 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final notesAsync = ref.watch(notesProvider);
-    final notes = notesAsync.value ?? const <Note>[];
+    final allNotes = notesAsync.value ?? const <Note>[];
+
+    final folder = _folderId == null
+        ? null
+        : allNotes.where((n) => n.id == _folderId).firstOrNull;
+    final visibleBase = _childrenOf(allNotes, _folderId);
+
+    final tagUniverse = <String>{
+      for (final note in allNotes) ...note.tags,
+    }.toList()
+      ..sort();
 
     final filtered = [
-      for (final note in notes)
-        if (_query.isEmpty || note.matches(_query)) note,
+      for (final note in visibleBase)
+        if ((_query.isEmpty || note.matches(_query)) &&
+            (_tagFilter == null || note.tags.contains(_tagFilter)))
+          note,
     ]..sort((a, b) {
         if (a.pinned != b.pinned) return a.pinned ? -1 : 1;
         return b.updatedAt.compareTo(a.updatedAt);
@@ -56,17 +139,26 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.notesTitle),
+        leading: _folderId == null
+            ? null
+            : BackButton(onPressed: _exitFolder),
+        title: Text(
+          folder == null
+              ? l10n.notesTitle
+              : (folder.title.isEmpty ? l10n.noteUntitled : folder.title),
+        ),
         backgroundColor: Colors.transparent,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/notes/new'),
+        onPressed: () => context.go(
+          _folderId == null ? '/notes/new' : '/notes/new?parent=$_folderId',
+        ),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
         label: Text(l10n.quickAddNote),
       ),
-      body: notesAsync.isLoading && notes.isEmpty
+      body: notesAsync.isLoading && allNotes.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -80,6 +172,37 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     ),
                   ),
                 ),
+                if (tagUniverse.isNotEmpty)
+                  SizedBox(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            selected: _tagFilter == null,
+                            label: Text(l10n.taskFilterAll),
+                            showCheckmark: false,
+                            onSelected: (_) =>
+                                setState(() => _tagFilter = null),
+                          ),
+                        ),
+                        for (final tag in tagUniverse)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              selected: _tagFilter == tag,
+                              label: Text('#$tag'),
+                              showCheckmark: false,
+                              onSelected: (_) =>
+                                  setState(() => _tagFilter = tag),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 Expanded(
                   child: filtered.isEmpty
                       ? EmptyState(
@@ -105,7 +228,11 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                               delayMs: index < 8 ? index * 40 : 0,
                               child: _NoteCard(
                                 note: note,
-                                onOpen: () => context.go('/notes/${note.id}'),
+                                childCount:
+                                    _childCount(allNotes, note.id),
+                                onOpen: () =>
+                                    context.go('/notes/${note.id}'),
+                                onOpenFolder: () => _enterFolder(note.id),
                                 onDelete: () => _delete(note),
                                 onPin: () => ref
                                     .read(noteRepositoryProvider)
@@ -129,13 +256,17 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 class _NoteCard extends StatelessWidget {
   const _NoteCard({
     required this.note,
+    required this.childCount,
     required this.onOpen,
+    required this.onOpenFolder,
     required this.onDelete,
     required this.onPin,
   });
 
   final Note note;
+  final int childCount;
   final VoidCallback onOpen;
+  final VoidCallback onOpenFolder;
   final VoidCallback onDelete;
   final VoidCallback onPin;
 
@@ -146,6 +277,9 @@ class _NoteCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final palette = isDark ? NaraPalette.noteDeep : NaraPalette.notePastel;
     final color = palette[note.colorIndex.clamp(0, palette.length - 1)];
+    final (checkDone, checkTotal) = checklistProgress(note.body);
+    final visibleTags = note.tags.take(2).toList();
+    final extraTags = note.tags.length - visibleTags.length;
 
     return NaraCard(
       onTap: onOpen,
@@ -168,9 +302,7 @@ class _NoteCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 onTap: onPin,
                 child: Icon(
-                  note.pinned
-                      ? Icons.push_pin_rounded
-                      : Icons.push_pin_outlined,
+                  note.pinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
                   size: 17,
                   color: note.pinned
                       ? theme.colorScheme.primary
@@ -180,13 +312,56 @@ class _NoteCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
+          if (checkTotal > 0) ...[
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  checkDone == checkTotal
+                      ? Icons.check_circle_rounded
+                      : Icons.check_circle_outline_rounded,
+                  size: 14,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '$checkDone/$checkTotal',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+          ],
           Expanded(
             child: Text(
-              note.body,
+              bodyPreview(note.body),
               style: theme.textTheme.bodySmall?.copyWith(height: 1.35),
               overflow: TextOverflow.fade,
             ),
           ),
+          if (visibleTags.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 4,
+              children: [
+                for (final tag in visibleTags)
+                  Text(
+                    '#$tag',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                if (extraTags > 0)
+                  Text(
+                    '+$extraTags',
+                    style: theme.textTheme.labelSmall,
+                  ),
+              ],
+            ),
+          ],
           Row(
             children: [
               Text(
@@ -194,6 +369,29 @@ class _NoteCard extends StatelessWidget {
                 style: theme.textTheme.labelSmall,
               ),
               const Spacer(),
+              if (childCount > 0)
+                InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: onOpenFolder,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.subdirectory_arrow_right_rounded,
+                          size: 15,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        Text(
+                          '$childCount',
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 6),
               InkWell(
                 borderRadius: BorderRadius.circular(10),
                 onTap: onDelete,
@@ -215,4 +413,8 @@ class _NoteCard extends StatelessWidget {
     if (date.isSameDay(now)) return context.l10n.commonToday;
     return '${date.day}/${date.month}';
   }
+}
+
+extension _FirstOrNull<T> on Iterable<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }

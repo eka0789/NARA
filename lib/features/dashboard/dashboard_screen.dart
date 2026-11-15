@@ -16,6 +16,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../chat/chat_providers.dart';
 import '../data/data_providers.dart';
 import '../habits/habit_streak.dart';
+import '../search/quick_find_delegate.dart';
 import '../tasks/task_form_sheet.dart';
 import 'dashboard_progress.dart';
 
@@ -105,6 +106,11 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  tooltip: l10n.searchHint,
+                  onPressed: () => showQuickFind(context, ref),
+                  icon: const Icon(Icons.search_rounded),
                 ),
                 InkWell(
                   borderRadius: BorderRadius.circular(24),
@@ -527,14 +533,19 @@ class _ProgressRing extends StatelessWidget {
       duration:
           reduceMotion ? Duration.zero : const Duration(milliseconds: 700),
       curve: Curves.easeOutCubic,
-      builder: (context, animated, _) => CustomPaint(
-        size: const Size.square(64),
-        painter: _RingPainter(
-          progress: animated,
-          colors: colors,
-          trackColor: track,
+      builder: (context, animated, _) => SizedBox(
+        // CustomPaint ignores `size` when it has a child — the SizedBox is
+        // what actually bounds the ring.
+        width: 64,
+        height: 64,
+        child: CustomPaint(
+          painter: _RingPainter(
+            progress: animated,
+            colors: colors,
+            trackColor: track,
+          ),
+          child: center,
         ),
-        child: center,
       ),
     );
   }

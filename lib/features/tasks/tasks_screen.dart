@@ -11,7 +11,14 @@ import '../data/data_providers.dart';
 import 'task_filter.dart';
 import 'task_form_sheet.dart';
 
-/// Task list with filters, swipe-to-delete with undo, and inline completion.
+const _priorityColors = [
+  Color(0xFF14B8A6),
+  Color(0xFFF59E0B),
+  Color(0xFFEF476F),
+];
+
+/// Task list with filters, swipe-to-delete with undo, inline completion —
+/// and a Notion-database-style board view grouped by category.
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
 
@@ -21,6 +28,7 @@ class TasksScreen extends ConsumerStatefulWidget {
 
 class _TasksScreenState extends ConsumerState<TasksScreen> {
   TaskFilter _filter = TaskFilter.all;
+  bool _boardView = false;
 
   Future<void> _toggle(Task task) async {
     HapticFeedback.lightImpact();
@@ -73,6 +81,13 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       appBar: AppBar(
         title: Text(l10n.tasksTitle),
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            tooltip: l10n.taskBoardTitle,
+            onPressed: () => setState(() => _boardView = !_boardView),
+            icon: Icon(_boardView ? Icons.view_list_rounded : Icons.grid_view_rounded),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showTaskFormSheet(context),
@@ -83,63 +98,265 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       ),
       body: tasksAsync.isLoading && tasks.isEmpty
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                SizedBox(
-                  height: 44,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    children: [
-                      for (final f in TaskFilter.values)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            selected: _filter == f,
-                            label: Text('${labels[f]} · ${counts[f]}'),
-                            onSelected: (_) => setState(() => _filter = f),
-                            showCheckmark: false,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: visible.isEmpty
-                      ? EmptyState(
-                          icon: Icons.task_alt_rounded,
-                          title: l10n.taskEmptyTitle,
-                          body: l10n.taskEmptyBody,
-                          actionLabel: l10n.quickAddTask,
-                          onAction: () => showTaskFormSheet(context),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-                          itemCount: visible.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final task = visible[index];
-                            return Entrance(
-                              delayMs: index < 8 ? index * 40 : 0,
-                              child: Dismissible(
-                                key: ValueKey('task-${task.id}'),
-                                direction: DismissDirection.endToStart,
-                                background: _DeleteBackground(theme: theme),
-                                onDismissed: (_) => _delete(task),
-                                child: TaskTile(
-                                  task: task,
-                                  onToggle: () => _toggle(task),
-                                  onOpen: () => showTaskFormSheet(context, task: task),
-                                ),
+          : _boardView
+              ? _board(tasks, theme)
+              : Column(
+                  children: [
+                    SizedBox(
+                      height: 44,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        children: [
+                          for (final f in TaskFilter.values)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: FilterChip(
+                                selected: _filter == f,
+                                label: Text('${labels[f]} · ${counts[f]}'),
+                                onSelected: (_) => setState(() => _filter = f),
+                                showCheckmark: false,
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: visible.isEmpty
+                          ? EmptyState(
+                              icon: Icons.task_alt_rounded,
+                              title: l10n.taskEmptyTitle,
+                              body: l10n.taskEmptyBody,
+                              actionLabel: l10n.quickAddTask,
+                              onAction: () => showTaskFormSheet(context),
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                              itemCount: visible.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 10),
+                              itemBuilder: (context, index) {
+                                final task = visible[index];
+                                return Entrance(
+                                  delayMs: index < 8 ? index * 40 : 0,
+                                  child: Dismissible(
+                                    key: ValueKey('task-${task.id}'),
+                                    direction: DismissDirection.endToStart,
+                                    background: _DeleteBackground(theme: theme),
+                                    onDismissed: (_) => _delete(task),
+                                    child: TaskTile(
+                                      task: task,
+                                      onToggle: () => _toggle(task),
+                                      onOpen: () => showTaskFormSheet(context, task: task),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+    );
+  }
+
+  /// Board grouped by category — open tasks only; columns scroll
+  /// vertically inside a fixed-height board.
+  Widget _board(List<Task> tasks, ThemeData theme) {
+    final l10n = context.l10n;
+    final labels = {
+      'general': l10n.catGeneral,
+      'work': l10n.catWork,
+      'study': l10n.catStudy,
+      'health': l10n.catHealth,
+      'personal': l10n.catPersonal,
+    };
+    final ordered = filterTasks(tasks, TaskFilter.all, DateTime.now())
+        .where((t) => !t.done)
+        .toList();
+
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          height: constraints.maxHeight,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final category in labels.keys)
+                _BoardColumn(
+                  label: labels[category] ?? category,
+                  tasks:
+                      ordered.where((t) => t.category == category).toList(),
+                  onToggle: _toggle,
+                  onOpen: (task) => showTaskFormSheet(context, task: task),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One category column of the board.
+class _BoardColumn extends StatelessWidget {
+  const _BoardColumn({
+    required this.label,
+    required this.tasks,
+    required this.onToggle,
+    required this.onOpen,
+  });
+
+  final String label;
+  final List<Task> tasks;
+  final ValueChanged<Task> onToggle;
+  final ValueChanged<Task> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: 290,
+      margin: const EdgeInsets.fromLTRB(0, 8, 12, 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest
+            .withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 4, 6, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(label, style: theme.textTheme.titleSmall),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${tasks.length}',
+                    style: theme.textTheme.labelSmall,
+                  ),
                 ),
               ],
             ),
+          ),
+          Expanded(
+            child: tasks.isEmpty
+                ? Center(
+                    child: Text(
+                      '—',
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    itemCount: tasks.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) => _BoardCard(
+                      task: tasks[index],
+                      onToggle: () => onToggle(tasks[index]),
+                      onOpen: () => onOpen(tasks[index]),
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
+  }
+}
+
+/// Compact draggable-free board card: priority stripe, title, due chip,
+/// one-tap complete.
+class _BoardCard extends StatelessWidget {
+  const _BoardCard({
+    required this.task,
+    required this.onToggle,
+    required this.onOpen,
+  });
+
+  final Task task;
+  final VoidCallback onToggle;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final priorityColor = _priorityColors[task.priority.index];
+    final due = task.dueDate;
+
+    return NaraCard(
+      onTap: onOpen,
+      padding: EdgeInsets.zero,
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 56,
+            decoration: BoxDecoration(
+              color: priorityColor,
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(20),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 4, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: theme.textTheme.titleSmall,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (due != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      _dueLabel(due, DateTime.now(), l10n),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: task.isOverdue(DateTime.now())
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: _CheckCircle(
+              done: task.done,
+              color: priorityColor,
+              onToggle: onToggle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _dueLabel(DateTime due, DateTime now, AppLocalizations l10n) {
+    if (due.isSameDay(now)) return l10n.commonToday;
+    if (due.isSameDay(now.addDays(1))) return l10n.commonTomorrow;
+    if (due.isSameDay(now.addDays(-1))) return l10n.commonYesterday;
+    return '${due.day}/${due.month}';
   }
 }
 
@@ -179,12 +396,7 @@ class TaskTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final priorityColors = const [
-      Color(0xFF14B8A6),
-      Color(0xFFF59E0B),
-      Color(0xFFEF476F),
-    ];
-    final priorityColor = priorityColors[task.priority.index];
+    final priorityColor = _priorityColors[task.priority.index];
 
     final categoryLabels = {
       'general': l10n.catGeneral,

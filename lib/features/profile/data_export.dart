@@ -40,6 +40,8 @@ String buildExportJson({
           'title': note.title,
           'body': note.body,
           'pinned': note.pinned,
+          'tags': note.tags,
+          'parentId': note.parentId,
           'updatedAt': note.updatedAt.toIso8601String(),
         },
     ],

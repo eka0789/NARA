@@ -114,8 +114,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/notes', builder: (context, state) => const NotesScreen()),
       GoRoute(
         path: '/notes/:id',
-        builder: (context, state) =>
-            NoteEditorScreen(noteId: state.pathParameters['id']),
+        builder: (context, state) => NoteEditorScreen(
+          noteId: state.pathParameters['id'],
+          // Sub-page creation: /notes/new?parent=<pageId>
+          parentId: state.uri.queryParameters['parent'],
+        ),
       ),
     ],
   );

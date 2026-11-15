@@ -203,5 +203,32 @@
     }
   },
   "exportData": "Ekspor data",
-  "exportDone": "Semua data disalin ke clipboard sebagai JSON."
+  "exportDone": "Semua data disalin ke clipboard sebagai JSON.",
+  "noteTagLabel": "Tag",
+  "noteTagAdd": "Tambah tag",
+  "noteTagHint": "Pisahkan dengan koma — mis. kerja, ide",
+  "subPageNew": "Sub-halaman baru",
+  "templatePickTitle": "Mulai halaman",
+  "templateBlank": "Kosong",
+  "tplJournalTitle": "Jurnal harian",
+  "tplJournalBody": "\n## ✅ Tiga prioritas utama\n- [ ] \n- [ ] \n- [ ] \n\n## 🙏 Tiga hal baik\n- \n- \n- \n\n## 💭 Catatan\n",
+  "tplMeetingTitle": "Notulen meeting",
+  "tplMeetingBody": "\n## 👥 Peserta\n- \n\n## 🗓️ Agenda\n- \n\n## 💬 Diskusi\n\n## ✅ Tindak lanjut\n- [ ] \n",
+  "tplProjectTitle": "Rencana proyek",
+  "tplProjectBody": "\n## 🎯 Tujuan\n\n## 🚩 Tonggak capaian\n- [ ] \n- [ ] \n- [ ] \n\n## 🧠 Catatan\n",
+  "searchHint": "Cari tugas, catatan, kebiasaan…",
+  "searchNoResults": "Tidak ditemukan untuk \"{q}\"",
+  "@searchNoResults": {
+    "placeholders": {
+      "q": { "type": "String" }
+    }
+  },
+  "deleteNestedTitle": "Hapus halaman dan sub-halamannya?",
+  "deleteNestedBody": "{count} sub-halaman juga akan dihapus. Tidak bisa dibatalkan.",
+  "@deleteNestedBody": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "taskBoardTitle": "Ganti tampilan papan"
 }

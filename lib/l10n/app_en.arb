@@ -228,5 +228,32 @@
     }
   },
   "exportData": "Export data",
-  "exportDone": "All data copied to clipboard as JSON."
+  "exportDone": "All data copied to clipboard as JSON.",
+  "noteTagLabel": "Tags",
+  "noteTagAdd": "Add tag",
+  "noteTagHint": "Comma separated — e.g. work, ideas",
+  "subPageNew": "New sub-page",
+  "templatePickTitle": "Start a page",
+  "templateBlank": "Blank",
+  "tplJournalTitle": "Daily journal",
+  "tplJournalBody": "\n## ✅ Top 3 priorities\n- [ ] \n- [ ] \n- [ ] \n\n## 🙏 Three good things\n- \n- \n- \n\n## 💭 Notes\n",
+  "tplMeetingTitle": "Meeting notes",
+  "tplMeetingBody": "\n## 👥 Attendees\n- \n\n## 🗓️ Agenda\n- \n\n## 💬 Discussion\n\n## ✅ Action items\n- [ ] \n",
+  "tplProjectTitle": "Project plan",
+  "tplProjectBody": "\n## 🎯 Goal\n\n## 🚩 Milestones\n- [ ] \n- [ ] \n- [ ] \n\n## 🧠 Notes\n",
+  "searchHint": "Search tasks, notes, habits…",
+  "searchNoResults": "Nothing found for \"{q}\"",
+  "@searchNoResults": {
+    "placeholders": {
+      "q": { "type": "String" }
+    }
+  },
+  "deleteNestedTitle": "Delete page and its sub-pages?",
+  "deleteNestedBody": "{count} sub-page(s) will also be deleted. This cannot be undone.",
+  "@deleteNestedBody": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "taskBoardTitle": "Toggle board view"
 }

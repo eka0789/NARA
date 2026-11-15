@@ -623,4 +623,62 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get exportDone => 'Semua data disalin ke clipboard sebagai JSON.';
+
+  @override
+  String get noteTagLabel => 'Tag';
+
+  @override
+  String get noteTagAdd => 'Tambah tag';
+
+  @override
+  String get noteTagHint => 'Pisahkan dengan koma — mis. kerja, ide';
+
+  @override
+  String get subPageNew => 'Sub-halaman baru';
+
+  @override
+  String get templatePickTitle => 'Mulai halaman';
+
+  @override
+  String get templateBlank => 'Kosong';
+
+  @override
+  String get tplJournalTitle => 'Jurnal harian';
+
+  @override
+  String get tplJournalBody =>
+      '\n## ✅ Tiga prioritas utama\n- [ ] \n- [ ] \n- [ ] \n\n## 🙏 Tiga hal baik\n- \n- \n- \n\n## 💭 Catatan\n';
+
+  @override
+  String get tplMeetingTitle => 'Notulen meeting';
+
+  @override
+  String get tplMeetingBody =>
+      '\n## 👥 Peserta\n- \n\n## 🗓️ Agenda\n- \n\n## 💬 Diskusi\n\n## ✅ Tindak lanjut\n- [ ] \n';
+
+  @override
+  String get tplProjectTitle => 'Rencana proyek';
+
+  @override
+  String get tplProjectBody =>
+      '\n## 🎯 Tujuan\n\n## 🚩 Tonggak capaian\n- [ ] \n- [ ] \n- [ ] \n\n## 🧠 Catatan\n';
+
+  @override
+  String get searchHint => 'Cari tugas, catatan, kebiasaan…';
+
+  @override
+  String searchNoResults(String q) {
+    return 'Tidak ditemukan untuk \"$q\"';
+  }
+
+  @override
+  String get deleteNestedTitle => 'Hapus halaman dan sub-halamannya?';
+
+  @override
+  String deleteNestedBody(int count) {
+    return '$count sub-halaman juga akan dihapus. Tidak bisa dibatalkan.';
+  }
+
+  @override
+  String get taskBoardTitle => 'Ganti tampilan papan';
 }

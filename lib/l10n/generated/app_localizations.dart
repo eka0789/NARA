@@ -1255,6 +1255,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All data copied to clipboard as JSON.'**
   String get exportDone;
+
+  /// No description provided for @noteTagLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get noteTagLabel;
+
+  /// No description provided for @noteTagAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tag'**
+  String get noteTagAdd;
+
+  /// No description provided for @noteTagHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Comma separated — e.g. work, ideas'**
+  String get noteTagHint;
+
+  /// No description provided for @subPageNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New sub-page'**
+  String get subPageNew;
+
+  /// No description provided for @templatePickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a page'**
+  String get templatePickTitle;
+
+  /// No description provided for @templateBlank.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank'**
+  String get templateBlank;
+
+  /// No description provided for @tplJournalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily journal'**
+  String get tplJournalTitle;
+
+  /// No description provided for @tplJournalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'\n## ✅ Top 3 priorities\n- [ ] \n- [ ] \n- [ ] \n\n## 🙏 Three good things\n- \n- \n- \n\n## 💭 Notes\n'**
+  String get tplJournalBody;
+
+  /// No description provided for @tplMeetingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting notes'**
+  String get tplMeetingTitle;
+
+  /// No description provided for @tplMeetingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'\n## 👥 Attendees\n- \n\n## 🗓️ Agenda\n- \n\n## 💬 Discussion\n\n## ✅ Action items\n- [ ] \n'**
+  String get tplMeetingBody;
+
+  /// No description provided for @tplProjectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Project plan'**
+  String get tplProjectTitle;
+
+  /// No description provided for @tplProjectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'\n## 🎯 Goal\n\n## 🚩 Milestones\n- [ ] \n- [ ] \n- [ ] \n\n## 🧠 Notes\n'**
+  String get tplProjectBody;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search tasks, notes, habits…'**
+  String get searchHint;
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found for \"{q}\"'**
+  String searchNoResults(String q);
+
+  /// No description provided for @deleteNestedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete page and its sub-pages?'**
+  String get deleteNestedTitle;
+
+  /// No description provided for @deleteNestedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sub-page(s) will also be deleted. This cannot be undone.'**
+  String deleteNestedBody(int count);
+
+  /// No description provided for @taskBoardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle board view'**
+  String get taskBoardTitle;
 }
 
 class _AppLocalizationsDelegate

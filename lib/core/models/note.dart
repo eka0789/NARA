@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// A free-form note with optional color and pin.
+/// A free-form note — a Notion-style page: optional color and pin, an
+/// optional parent page (sub-pages make a tree), and free-form tags.
 class Note {
   const Note({
     required this.id,
@@ -8,6 +9,8 @@ class Note {
     this.body = '',
     this.colorIndex = 0,
     this.pinned = false,
+    this.parentId,
+    this.tags = const [],
     required this.createdAt,
     required this.updatedAt,
   });
@@ -17,8 +20,14 @@ class Note {
   final String body;
   final int colorIndex;
   final bool pinned;
+
+  /// Parent page id; null for top-level pages.
+  final String? parentId;
+  final List<String> tags;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  static const _sentinel = Object();
 
   Note copyWith({
     String? id,
@@ -26,6 +35,8 @@ class Note {
     String? body,
     int? colorIndex,
     bool? pinned,
+    Object? parentId = _sentinel,
+    List<String>? tags,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -35,6 +46,8 @@ class Note {
       body: body ?? this.body,
       colorIndex: colorIndex ?? this.colorIndex,
       pinned: pinned ?? this.pinned,
+      parentId: parentId == _sentinel ? this.parentId : parentId as String?,
+      tags: tags ?? this.tags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -46,6 +59,8 @@ class Note {
         'body': body,
         'colorIndex': colorIndex,
         'pinned': pinned,
+        'parentId': parentId,
+        'tags': tags,
         'createdAt': createdAt.millisecondsSinceEpoch,
         'updatedAt': updatedAt.millisecondsSinceEpoch,
       };
@@ -64,6 +79,11 @@ class Note {
       body: (map['body'] as String?) ?? '',
       colorIndex: (map['colorIndex'] as int?) ?? 0,
       pinned: (map['pinned'] as bool?) ?? false,
+      parentId: (map['parentId'] as String?),
+      tags: [
+        for (final tag in (map['tags'] as List? ?? const []))
+          if (tag is String && tag.trim().isNotEmpty) tag.trim(),
+      ],
       createdAt: parseDate(map['createdAt']),
       updatedAt: parseDate(map['updatedAt']),
     );
@@ -71,6 +91,8 @@ class Note {
 
   bool matches(String query) {
     final q = query.toLowerCase();
-    return title.toLowerCase().contains(q) || body.toLowerCase().contains(q);
+    return title.toLowerCase().contains(q) ||
+        body.toLowerCase().contains(q) ||
+        tags.any((tag) => tag.toLowerCase().contains(q));
   }
 }
